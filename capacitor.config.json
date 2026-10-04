@@ -1,0 +1,7 @@
+{
+  "appId": "io.github.jeremy8776.newhamparking",
+  "appName": "Newham Parking",
+  "webDir": "docs",
+  "backgroundColor": "#1c1c1e",
+  "android": { "allowMixedContent": false }
+}

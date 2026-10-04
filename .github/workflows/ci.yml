@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, prod]
+  pull_request:
+    branches: [dev, prod]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Python tests
+        run: python -m unittest discover -s tests -v
+      - name: JavaScript tests
+        run: node tests/rules.test.js
+      - name: JavaScript syntax
+        run: for f in js/*.js; do node --check "$f"; done
+      - name: Built site is present and consistent
+        run: |
+          test -s docs/index.html
+          test -s docs/sw.js
+          test -s docs/manifest.webmanifest
+          test "$(ls docs/tiles/t_*.js | wc -l)" -ge 20
+          python -c "import json;json.load(open('docs/manifest.webmanifest'))"

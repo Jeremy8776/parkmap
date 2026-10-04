@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Newham parking guide</title>
+<meta name="description" content="Who owns the road, who enforces the parking, and whether a permit zone is running, for every road in Newham, London.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>/*LEAFLET_CSS*/</style>
+<style>/*CSS*/</style>
+</head>
+<body>
+<div id="mapwrap">
+  <div id="map"></div>
+
+  <div id="search" class="glass">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
+    <input id="q" placeholder="Search streets and places" autocomplete="off" aria-label="Search streets and places">
+    <button id="clearbtn" hidden aria-label="Clear">&times;</button>
+    <div id="sugg" class="glass" hidden></div>
+  </div>
+
+  <div id="tools">
+    <button id="btnLocate" class="glass round" aria-label="Show my location"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg></button>
+    <button id="btnLayers" class="glass round" aria-label="Map layers"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 16.5l9 5 9-5" opacity=".55"/></svg></button>
+    <button id="btnGuide" class="glass round" aria-label="Guide"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".6" fill="currentColor"/></svg></button>
+  </div>
+  <div id="layersPop" class="glass" hidden></div>
+  <div id="zoomhint" class="glass">Zoom in to see roads and bays</div>
+  <div id="loadhint" class="glass">Loading area...</div>
+  <div id="fogcount" class="glass"></div>
+
+  <div id="sheet" class="glass" data-detent="peek">
+    <div id="grab" aria-hidden="true"><i></i></div>
+    <div id="statusRow"><div id="glyph"></div><div class="ht"><div id="hTitle"></div><div id="hSub"></div></div></div>
+    <button id="ctaLocate" class="cta">Check where I am</button>
+    <div id="timeBox">
+      <div id="presets"><button data-p="now">Now</button><button data-p="eve">This evening</button><button data-p="night">Overnight</button><button data-p="day">All day</button><button id="moreTime" aria-expanded="false" aria-label="Adjust day, time and length of stay">Adjust</button></div>
+      <div id="whenSum"></div>
+      <div id="scrub" role="slider" tabindex="0" aria-label="Time of day" aria-valuemin="0" aria-valuemax="1439">
+        <div id="bands"></div>
+        <div class="ticks"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+        <div id="handle"><b id="tip"></b><i></i></div>
+      </div>
+      <div id="timeMeta"><span id="bandCap"></span><button id="nowbtn" hidden>Now</button></div>
+      <span id="whenLabel" hidden></span>
+      <div id="days"></div>
+      <div id="durs" aria-label="Length of stay"></div>
+    </div>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<template id="tpl-guide">
+  <section data-seg="areas">
+    <div id="coverage"></div>
+    <h5>Gallions Reach in detail</h5>
+    <details class="disc" data-fit="[[51.5030,0.0640],[51.5215,0.0760]]"><summary><i class="sw" style="background:#e5383b"></i><span class="dt">TfL Red Routes</span><span class="tag">Official</span><i class="chev"></i></summary><div class="dc">
+      <p><b>Roads.</b> Royal Docks Road (A1020), Gallions Roundabout, Woolwich Manor Way (A117, south of the roundabout), Newham Way (A13), Albert Road and Pier Road.</p>
+      <ul><li>Double red: no stopping at any time.</li><li>Single red: no stopping in the plated hours.</li><li>Red box: limited stopping. White box: loading or waiting in the working day.</li><li>Blue Badge set-down is allowed on double red.</li></ul>
+      <p><b>Fine.</b> £160, £80 within 14 days. TfL enforces.</p></div></details>
+    <details class="disc" data-fit="[[51.5055,0.0700],[51.5165,0.0830]]"><summary><i class="sw" style="background:#1b998b"></i><span class="dt">Beckton zone extension</span><span class="tag">Official</span><i class="chev"></i></summary><div class="dc">
+      <p><b>Hours.</b> Mon to Fri, 10am to 2pm. Newham enforces.</p>
+      <p><b>Roads.</b> Armada Way, Atlantis Avenue, Royal Albert Way, Gallions Road, Winsor Terrace, Claps Gate Lane, Frobisher Road, parts of Hornet Way and Magellan Boulevard, Woolwich Manor Way north of the roundabout.</p>
+      <ul><li>Permit holder bays are permit only in zone hours.</li><li>Yellow lines and plates apply as marked. Pavement parking is banned in London unless a sign allows it.</li><li>Pay-by-phone bays on Atlantis Avenue and Gallions Road run 8am to 6:30pm with a 4 hour maximum (see Rules).</li><li>Car-free developments get no resident permits unless Blue Badge, but can buy visitor permits.</li></ul>
+      <p><b>Fine.</b> £130 (£65) serious, £80 (£40) less serious.</p></div></details>
+    <details class="disc" data-fit="[[51.5120,0.0580],[51.5215,0.0740]]"><summary><i class="sw" style="background:#8e5ea2"></i><span class="dt">Beckton industrial zone</span><span class="tag">Hours differ by source</span><i class="chev"></i></summary><div class="dc">
+      <p><b>Roads.</b> Alpine Way, Eastbury Road, Whitings Way, Hillcroft Road, Roding Road.</p>
+      <p><b>Hours.</b> Zone map: Mon to Sat 8am to 6:30pm. Pay-by-phone list: Alpine Way Mon to Fri, 4 hours. Trust the sign.</p>
+      <p>Permits are for businesses based in the zone. Visitors use shared bays, up to 4 hours.</p></div></details>
+    <details class="disc" data-fit="[[51.5075,0.0585],[51.5130,0.0700]]"><summary><i class="sw" style="background:#6a994e"></i><span class="dt">Original Beckton zone</span><span class="tag">Hours differ by source</span><i class="chev"></i></summary><div class="dc">
+      <p><b>Roads.</b> Cyprus Place, Ferndale Street, Pennyroyal Avenue, Renfrew Close, Savage Gardens.</p>
+      <p><b>Hours.</b> Zone page: Mon to Fri 9am to 6:30pm, Sat 11am to 12 noon. Pay-by-phone list: Mon to Sat 9am to 6:30pm. Trust the sign.</p></div></details>
+    <details class="disc" data-fit="[[51.5145,0.0750],[51.5175,0.0830]]"><summary><i class="sw" style="background:#7b3fa0"></i><span class="dt">Gallions Reach Shopping Park</span><span class="tag">Private</span><i class="chev"></i></summary><div class="dc">
+      <p>UKPC enforces with ANPR.</p>
+      <ul><li>Free up to 4 hours, no extension.</li><li>2,000+ spaces. Closes midnight. 2 m height limit.</li><li>PureGym 12am to 5:30am: register your car on the gym tablet.</li><li>Blue Badge: free up to 4 hours in marked bays.</li><li>8 rapid EV bays (RAW Charging), normal limits apply.</li></ul>
+      <p><b>Overstay.</b> A private Parking Charge Notice from UKPC. Not a council fine.</p>
+      <p><b>Contact.</b> info@gallions-reach.co.uk, 0207 473 8160</p></div></details>
+    <details class="disc" data-fit="[[51.5190,0.0690],[51.5225,0.0750]]"><summary><i class="sw" style="background:#7b3fa0"></i><span class="dt">Gateway Retail Park, Lidl, Tesco</span><span class="tag">Private</span><i class="chev"></i></summary><div class="dc">
+      <p><b>Gateway.</b> Free 3 hours before 11pm. 30 minutes maximum 11pm to 6am. 660+ spaces. The operator is not named on the centre's page, so read the signs.</p>
+      <p><b>Lidl, Tesco.</b> Customer parking, free, per OpenStreetMap. Limits not verified.</p></div></details>
+    <details class="disc" data-fit="[[51.5050,0.0725],[51.5100,0.0810]]"><summary><i class="sw" style="background:#f29f05"></i><span class="dt">Royal Albert Wharf estates</span><span class="tag">Inferred</span><i class="chev"></i></summary><div class="dc">
+      <p><b>Roads.</b> Albert Basin Way, Basin Approach, Shackleton Way, Albatross Close, Jenkins Lane, Thomas Cribb Mews.</p>
+      <p>Rules are set by the owner or management company. Check your lease and the signs. Newer plots are often car-free or barred from on-street permits by planning agreement (GLA report, Plot 3A Gallions Reach).</p></div></details>
+    <details class="disc" data-fit="[[51.5120,0.0580],[51.5200,0.0880]]"><summary><i class="sw" style="background:#6b4f3a"></i><span class="dt">Industrial and business parks</span><span class="tag">Inferred</span><i class="chev"></i></summary><div class="dc">
+      <p>London Industrial Park, Gemini Business Park, and the yards off Hornet Way, Hartmann Road and Frobisher Yard. Internal roads are private.</p></div></details>
+    <details class="disc" data-fit="[[51.5090,0.0690],[51.5160,0.0830]]"><summary><i class="sw" style="background:#0f7c8c"></i><span class="dt">DLR depot, gas works, utilities</span><i class="chev"></i></summary><div class="dc">
+      <p>Operational or brownfield land. No public parking. No station car park is mapped at Gallions Reach DLR.</p></div></details>
+    <details class="disc" data-fit="[[51.5010,0.0820],[51.5060,0.0885]]"><summary><i class="sw" style="background:#9aa0a8"></i><span class="dt">Barking Riverside</span><i class="chev"></i></summary><div class="dc">
+      <p>A different borough (Barking and Dagenham) with its own rules. Thamesmead, across the Thames, is Greenwich.</p></div></details>
+    <details class="disc"><summary><i class="sw" style="background:#2e7d32"></i><span class="dt">Council estate land</span><span class="tag">Newham policy 5.2</span><i class="chev"></i></summary><div class="dc">
+      <p>Most estate roads are not adopted, so they sit outside Newham's civil enforcement area. Housing managers run permits and bays by agreement with the landowner.</p></div></details>
+  </section>
+
+  <section data-seg="symbols"></section>
+
+  <section data-seg="rules">
+    <h5>Who enforces what</h5>
+    <table>
+      <tr><th>Where</th><th>Enforced by</th><th>Ticket</th></tr>
+      <tr><td>TfL Red Route</td><td>TfL officers</td><td>£160 (£80 within 14 days). Appeal to TfL, then London Tribunals.</td></tr>
+      <tr><td>Newham road</td><td>Newham officers</td><td>£130/£65 or £80/£40. Appeal to Newham, then London Tribunals.</td></tr>
+      <tr><td>Council estate</td><td>Housing managers</td><td>Estate rules, not a council PCN.</td></tr>
+      <tr><td>Private road or car park</td><td>Landowner or its operator, e.g. UKPC</td><td>Private Parking Charge Notice. Appeal to the operator, then the trade-body service.</td></tr>
+    </table>
+    <h5>Newham pay-by-phone bays on mapped streets</h5>
+    <table><tr><th>Street</th><th>Where</th><th>Hours</th><th>Max</th></tr><tbody id="pbp"></tbody></table>
+    <h5>How to read this</h5>
+    <p class="note"><b>Red:</b> TfL from the OpenStreetMap operator tag, cross-checked against the TfL list in Newham's parking policy. <b>Blue vs amber:</b> blue if the road runs along Newham's adopted-highway boundary data, amber if not, which is an inference. Newer adoptions may be missing. <b>Bays:</b> OpenStreetMap does not record bay signs, so a Newham bay is shown as a permit bay because it sits in a zone. <b>Lines:</b> OpenStreetMap does not say single or double yellow. Zone hours come from Newham's GIS and can differ from the bay sign. The sign on the street always wins. For a definite answer on one street, ask Newham Highways for its street gazetteer entry.</p>
+    <h5>Data sources and cross-checks</h5>
+    <div id="srcList"></div>
+    <h5>Sources</h5>
+    <ul class="src">
+      <li><a href="https://www.newham.gov.uk/downloads/file/9935/newhamparkingpolicyprocedures-october-2020-amended-october-2025-003-">Newham parking policy (Oct 2025)</a></li>
+      <li><a href="https://www.newham.gov.uk/parking-permits/resident-parking-zones">Newham resident parking zones</a>, <a href="https://lbnewham.maps.arcgis.com/apps/webappviewer/index.html?id=6c213298647e4283a537266c72c1d086">RPZ finder</a></li>
+      <li><a href="https://www.thegazette.co.uk/notice/2879566">Gazette: Beckton CPZ extension notice</a></li>
+      <li><a href="https://tfl.gov.uk/modes/driving/red-routes">TfL red routes</a></li>
+      <li><a href="https://gallions-reach.co.uk/car-park">Gallions Reach Shopping Park parking</a>, <a href="https://becktongateway.com/visit-us/">Beckton Gateway</a></li>
+      <li><a href="https://www.london.gov.uk/sites/default/files/public%3A/public%3A/PAWS/media_id_184849/gallions_reach_report.pdf">GLA report, Plot 3A</a></li>
+      <li>Roads, bays, chargers: OpenStreetMap contributors. Zones, highway boundary: Newham Council open GIS. Data pulled 04/10/2026.</li>
+    </ul>
+  </section>
+</template>
+
+<script>/*LEAFLET_JS*/</script>
+<script>const D=/*DATA*/null;</script>
+<script>/*JS*/</script>
+<script>if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol) && !window.Capacitor) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>
+</body>
+</html>
