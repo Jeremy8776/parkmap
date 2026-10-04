@@ -1,4 +1,4 @@
-"""Build the Newham parking guide: classify roads from several sources, tile the data, write the page.
+"""Build ParkMap's Newham coverage: classify roads, tile the data, write the page.
 
 Run: python sources/fetch_region.py   (once, downloads raw data into data/region)
      python build.py                  (offline, writes the site into docs/: index.html, tiles/, PWA files)

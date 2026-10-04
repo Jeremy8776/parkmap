@@ -6,7 +6,7 @@ const CHEV = '<i class="chev"></i>';
 const TRY = ['Atlantis Avenue', 'Romford Road', 'Barking Road', 'Gallions Reach Shopping Park'];
 function goHome() {
   LAST = null; G.hl.clearLayers(); $('q').value = '';
-  setHead({ tone: 'home', title: 'Newham parking', sub: PHONE() ? 'Tap the map, or check where you are' : 'Tap the map to check a spot' });
+  setHead({ tone: 'home', title: 'ParkMap', sub: PHONE() ? 'Newham · tap the map or check where you are' : 'Newham coverage · tap the map to check a spot' });
   setBody(`<p class="lead">Tap anywhere on the map. You get a plain answer: whose road it is, who enforces it, and whether a permit zone is running at the time you set above.</p>
     <h5>Try</h5><div class="group flush">${TRY.map(t => `<button class="nav" data-find="${t}"><span>${t}</span>${CHEV}</button>`).join('')}</div>
     <div class="group flush"><button class="nav" id="openNearby"><span><b>Nearby spots</b><br><small>Bays and car parks around you, nearest first</small></span>${CHEV}</button><button class="nav" id="openGuide"><span><b>Guide</b><br><small>Areas, symbols and rules</small></span>${CHEV}</button></div>`, 'home');

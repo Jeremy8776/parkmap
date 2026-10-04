@@ -1,4 +1,4 @@
-package io.github.jeremy8776.newhamparking;
+package io.github.jeremy8776.parkmap;
 
 import com.getcapacitor.BridgeActivity;
 

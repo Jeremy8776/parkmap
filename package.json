@@ -1,6 +1,6 @@
 {
-  "name": "newham-parking-guide",
-  "version": "0.1.0",
+  "name": "parkmap",
+  "version": "0.2.0",
   "private": true,
   "description": "Who owns the road, who enforces the parking, and whether a permit zone is running, for every road in Newham, London.",
   "license": "MIT",

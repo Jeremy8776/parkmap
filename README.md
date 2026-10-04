@@ -1,8 +1,8 @@
-# Newham Parking Guide
+# ParkMap
 
 **Whose road is this, who enforces the parking, and is a permit zone running while I'm parked here?**
 
-A free, open-source map for every road in the London Borough of Newham. Tap a road, pick a time and how long you'll stay, and get a plain answer: who owns it, who sends the ticket, what it costs, how to appeal, and how sure we are.
+ParkMap is a free, open-source parking guide designed to grow beyond one place. Its current coverage is the London Borough of Newham. Tap a road, pick a time and how long you'll stay, and get a plain answer: who owns it, who sends the ticket, what it costs, how to appeal, and how sure we are.
 
 <p align="center">
   <img src="assets/screenshots/desktop.png" alt="Desktop view: a card for Atlantis Avenue showing the permit zone running" width="760">
@@ -10,10 +10,9 @@ A free, open-source map for every road in the London Borough of Newham. Tap a ro
 <p align="center">
   <img src="assets/screenshots/phone-card.png" alt="Phone: spot card" width="200">
   <img src="assets/screenshots/phone-nearby.png" alt="Phone: nearby spots list" width="200">
-  <img src="assets/screenshots/phone-home.png" alt="Phone: home" width="200">
 </p>
 
-**Use it:** the web app at **https://jeremy8776.github.io/newham-parking-guide/** (installs to your home screen) or the **Android APK** from the [Releases](../../releases) page.
+**Use it:** download the Android APK from [Releases](../../releases). The web app is prepared for GitHub Pages at **https://jeremy8776.github.io/parkmap/** but is not published until the `prod` branch is deployed.
 
 > **Read this first.** The sign on the street always wins. This is a guide built from open data, not legal or parking advice, and it can be wrong. "Permit zone is off" does **not** mean you can park: yellow lines, loading bans and bay signs can still apply. See [Accuracy](#accuracy-and-limits).
 
@@ -24,7 +23,7 @@ A free, open-source map for every road in the London Borough of Newham. Tap a ro
 - **Permit zones.** All 41 Newham zones, with hours parsed from Newham's own text, plus pay-by-phone bays, limits and kerb markings where mapped.
 - **Pins that follow your time.** A blue ring means the permit zone is off for your stay, amber means it's running or you'd overstay a car park's limit. There is deliberately no green "free" ring.
 - **Fines and appeals.** Penalty amounts, discount windows and the appeal route for TfL, Newham and private operators.
-- **Check where I am.** One tap for the road you're standing on. A nearby list shows bays and car parks, nearest first.
+- **Check where I am.** One tap for your GPS position; if you are off a mapped road, the card says how far away the nearest road is. That road's rules may not apply exactly where you are. A nearby list shows bays and car parks, nearest first.
 - **Works offline.** The roads and rules are in the app. Only the map background needs signal.
 - **Built for phones:** thumb-reachable sheet, 44px targets, safe areas, light and dark.
 
@@ -32,8 +31,8 @@ A free, open-source map for every road in the London Borough of Newham. Tap a ro
 
 | | |
 |---|---|
-| **Web / PWA** | https://jeremy8776.github.io/newham-parking-guide/ . On a phone, use "Add to Home Screen". It then works offline. |
-| **Android APK** | Download `newham-parking-*-debug.apk` from [Releases](../../releases), open it, and allow "install unknown apps" for your browser when asked. It is a debug-signed build for testing, not a Play Store release. |
+| **Web / PWA** | Planned for https://jeremy8776.github.io/parkmap/ once `prod` is deployed. On a phone, use "Add to Home Screen". It then works offline. |
+| **Android APK** | Download `parkmap-*-debug.apk` from [Releases](../../releases), open it, and allow "install unknown apps" for your browser when asked. It is a debug-signed build for testing, not a Play Store release. The new ParkMap package installs separately from the earlier Newham Parking test APK; uninstall the old app when you no longer need it. |
 | **iPhone** | No app. Use the web app and Add to Home Screen. |
 
 ## How it works
@@ -54,8 +53,8 @@ Road classification is a vote across independent sources (OpenStreetMap tags, Ne
 You need Python 3.11+ and Node 20+ (JDK 17 and the Android SDK only for the APK).
 
 ```bash
-git clone https://github.com/Jeremy8776/newham-parking-guide
-cd newham-parking-guide
+git clone https://github.com/Jeremy8776/parkmap
+cd parkmap
 
 python sources/fetch_region.py arc zones osm tfl   # download source data (about 45 MB, needs network, takes a few minutes)
 python sources/fetch_pd.py                         # Land Registry parcels for the Gallions Reach area
@@ -78,7 +77,7 @@ Be honest about what this is:
 - **Land Registry parcels are only fetched for the Gallions Reach area**, and they name no owner. They carry low weight.
 - **Car park limits** (for example Gallions Reach Shopping Park, Beckton Gateway) come from the operators' public pages and can change. Parkopedia lists some of these as closed at times where we say open, so treat them as unverified.
 - **Only Newham has rules.** Neighbouring boroughs show roads and TfL Red Routes, not their zones. TfL Red Routes for all of Greater London are an optional layer.
-- **Not tested on a real device by the author yet:** the Android APK and the phone layout have been checked in browser emulation only.
+- **Phone tested:** a Samsung S24+ ran the debug APK, including location, map, ticket help, time controls and local roads while offline. This is one device, not a guarantee for other phones.
 - **Data is a snapshot** (pulled 04/10/2026). It does not update itself.
 
 ## Contributing

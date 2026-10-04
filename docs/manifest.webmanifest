@@ -1,7 +1,7 @@
 {
-  "name": "Newham Parking Guide",
-  "short_name": "Newham Parking",
-  "description": "Who owns the road, who enforces the parking, and whether a permit zone is running, for every road in Newham.",
+  "name": "ParkMap",
+  "short_name": "ParkMap",
+  "description": "A parking guide starting with Newham, London: road ownership, enforcement and permit-zone hours.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

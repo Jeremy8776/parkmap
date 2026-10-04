@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Newham Parking</string>
-    <string name="title_activity_main">Newham Parking</string>
-    <string name="package_name">io.github.jeremy8776.newhamparking</string>
-    <string name="custom_url_scheme">io.github.jeremy8776.newhamparking</string>
+    <string name="app_name">ParkMap</string>
+    <string name="title_activity_main">ParkMap</string>
+    <string name="package_name">io.github.jeremy8776.parkmap</string>
+    <string name="custom_url_scheme">io.github.jeremy8776.parkmap</string>
 </resources>
