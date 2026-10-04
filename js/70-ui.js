@@ -172,7 +172,12 @@ $('btnLocate').onclick = () => {
     ME = ll; meMarker = L.layerGroup([L.circle(ll, { radius: Math.max(pos.coords.accuracy || 20, 10), interactive: false, color: '#0a84ff', weight: 1, fillOpacity: .12 }),
       L.circleMarker(ll, { radius: 7, interactive: false, color: '#fff', weight: 3, fillColor: '#0a84ff', fillOpacity: 1 })]).addTo(map);
     map.setView(ll, 17, { animate: false });
-    whenLoaded(ll.toBounds(300), () => showFramed(ll));
+    whenLoaded(ll.toBounds(300), () => {
+      if (analyse(ll).cls) return showFramed(ll);                    // standing on something we know about
+      const sn = snapToRoad(ll.lat, ll.lng, 120);                    // otherwise the nearest road, and say so
+      if (!sn) { showFramed(ll); return toast('No mapped road within 120 m of you'); }
+      showFramed(sn.ll); LAST.pre = `Nearest road, ${Math.max(1, Math.round(sn.d))} m from you · `; LAST.sub = LAST.pre + LAST.sub; setHead({ tone: LAST.tone, title: LAST.title, sub: LAST.sub });
+    });
   }, err => { $('btnLocate').classList.remove('busy'); toast(err.code === 1 ? 'Location permission was declined' : 'Could not get your location'); }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 });
 };
 // ---- native share sheet on phones ----

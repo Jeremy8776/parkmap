@@ -33,4 +33,19 @@ t('friday evening: next start is Saturday midnight', () => {
 });
 t('stay length parsing', () => { assert.strictEqual(A.parseMax('30 mins'), 30); assert.strictEqual(A.parseMax('4 hours'), 240); assert.strictEqual(A.parseMax('no limit'), null); });
 t('wording helpers', () => { assert.strictEqual(A.durText(60), '1 hour'); assert.strictEqual(A.durText(120), '2 hours'); assert.strictEqual(A.durText(1440), 'all day'); assert.strictEqual(A.relMins(150), '2h 30m'); assert.strictEqual(A.relMins(45), '45m'); });
+// The GPS fallback must point to the road itself and refuse distant matches.
+const spotSrc = fs.readFileSync(path.join(__dirname, '..', 'js', '40-spot.js'), 'utf8');
+const spotCtx = vm.createContext({
+  D: { roads: [{ g: [[51.5, 0], [51.5, 0.002]] }] },
+  L: { latLng: (lat, lng) => ({ lat, lng }) },
+  map: { on: () => {} }, Math
+});
+vm.runInContext(spotSrc + '\n;globalThis.snap = snapToRoad;', spotCtx);
+t('GPS fallback snaps to the nearest point on a road', () => {
+  const r = spotCtx.snap(51.5005, 0.001, 120);
+  assert.ok(r && Math.abs(r.d - 55.287) < 0.1);
+  assert.ok(Math.abs(r.ll.lat - 51.5) < 1e-8);
+  assert.ok(Math.abs(r.ll.lng - 0.001) < 1e-8);
+});
+t('GPS fallback does not invent a road beyond its limit', () => assert.strictEqual(spotCtx.snap(51.503, 0.001, 120), null));
 console.log(`${n} passed`);

@@ -1548,6 +1548,20 @@ function nearestRoad(lat, lon, maxd) {
   D.roads.forEach(r => { const d = lineDist(p, r.g); if (d < bd) { bd = d; best = r; } });
   return best ? { r: best, d: bd } : null;
 }
+/* Closest point on any road within maxd metres. Used by "Check where I am": a GPS fix is rarely exactly on the carriageway. */
+function snapToRoad(lat, lon, maxd) {
+  const p = xy(lat, lon); let best = null, bd = maxd;
+  D.roads.forEach(r => {
+    const g = r.g;
+    for (let i = 1; i < g.length; i++) {
+      const a = g[i - 1].xy || (g[i - 1].xy = xy(...g[i - 1])), b = g[i].xy || (g[i].xy = xy(...g[i]));
+      const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy, t = L2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2)) : 0;
+      const d = Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+      if (d < bd) { bd = d; best = [(a[1] + t * dy) / KY, (a[0] + t * dx) / KX]; }
+    }
+  });
+  return best ? { ll: L.latLng(best[0], best[1]), d: bd } : null;
+}
 function landAt(lat, lon) {
   const order = ['carpark', 'retail', 'commercial', 'industrial', 'dlr', 'estate', 'brownfield'];
   const hits = D.land.filter(a => inPoly(lat, lon, a.g));
@@ -1846,7 +1860,7 @@ function refreshTime(commit) {
   document.getElementById('whenSum').textContent = whenText(WHEN) + ' for ' + durText(DUR);
   drawBands(); applyTime();
   if (LAST) {
-    const M = analyse(LAST.latlng); LAST = M;
+    const M = analyse(LAST.latlng); M.pre = LAST.pre; if (M.pre) M.sub = M.pre + M.sub; LAST = M;
     setHead({ tone: M.tone, title: M.title, sub: M.sub });
     if (commit && MODE === 'spot') { setBody(spotBody(M), 'spot'); if (sheetDetent() === 'fit') setDetent('fit'); }
   }
@@ -2052,7 +2066,12 @@ $('btnLocate').onclick = () => {
     ME = ll; meMarker = L.layerGroup([L.circle(ll, { radius: Math.max(pos.coords.accuracy || 20, 10), interactive: false, color: '#0a84ff', weight: 1, fillOpacity: .12 }),
       L.circleMarker(ll, { radius: 7, interactive: false, color: '#fff', weight: 3, fillColor: '#0a84ff', fillOpacity: 1 })]).addTo(map);
     map.setView(ll, 17, { animate: false });
-    whenLoaded(ll.toBounds(300), () => showFramed(ll));
+    whenLoaded(ll.toBounds(300), () => {
+      if (analyse(ll).cls) return showFramed(ll);                    // standing on something we know about
+      const sn = snapToRoad(ll.lat, ll.lng, 120);                    // otherwise the nearest road, and say so
+      if (!sn) { showFramed(ll); return toast('No mapped road within 120 m of you'); }
+      showFramed(sn.ll); LAST.pre = `Nearest road, ${Math.max(1, Math.round(sn.d))} m from you · `; LAST.sub = LAST.pre + LAST.sub; setHead({ tone: LAST.tone, title: LAST.title, sub: LAST.sub });
+    });
   }, err => { $('btnLocate').classList.remove('busy'); toast(err.code === 1 ? 'Location permission was declined' : 'Could not get your location'); }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 });
 };
 // ---- native share sheet on phones ----

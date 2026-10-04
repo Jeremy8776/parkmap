@@ -42,7 +42,7 @@ function refreshTime(commit) {
   document.getElementById('whenSum').textContent = whenText(WHEN) + ' for ' + durText(DUR);
   drawBands(); applyTime();
   if (LAST) {
-    const M = analyse(LAST.latlng); LAST = M;
+    const M = analyse(LAST.latlng); M.pre = LAST.pre; if (M.pre) M.sub = M.pre + M.sub; LAST = M;
     setHead({ tone: M.tone, title: M.title, sub: M.sub });
     if (commit && MODE === 'spot') { setBody(spotBody(M), 'spot'); if (sheetDetent() === 'fit') setDetent('fit'); }
   }

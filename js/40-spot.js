@@ -24,6 +24,20 @@ function nearestRoad(lat, lon, maxd) {
   D.roads.forEach(r => { const d = lineDist(p, r.g); if (d < bd) { bd = d; best = r; } });
   return best ? { r: best, d: bd } : null;
 }
+/* Closest point on any road within maxd metres. Used by "Check where I am": a GPS fix is rarely exactly on the carriageway. */
+function snapToRoad(lat, lon, maxd) {
+  const p = xy(lat, lon); let best = null, bd = maxd;
+  D.roads.forEach(r => {
+    const g = r.g;
+    for (let i = 1; i < g.length; i++) {
+      const a = g[i - 1].xy || (g[i - 1].xy = xy(...g[i - 1])), b = g[i].xy || (g[i].xy = xy(...g[i]));
+      const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy, t = L2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2)) : 0;
+      const d = Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+      if (d < bd) { bd = d; best = [(a[1] + t * dy) / KY, (a[0] + t * dx) / KX]; }
+    }
+  });
+  return best ? { ll: L.latLng(best[0], best[1]), d: bd } : null;
+}
 function landAt(lat, lon) {
   const order = ['carpark', 'retail', 'commercial', 'industrial', 'dlr', 'estate', 'brownfield'];
   const hits = D.land.filter(a => inPoly(lat, lon, a.g));
