@@ -1,39 +1,29 @@
 # ParkMap
 
-**Whose road is this, who enforces the parking, and is a permit zone running while I'm parked here?**
+**Who owns the road, who enforces parking, and when does the permit zone apply?**
 
-ParkMap is a free, open-source parking guide designed to grow beyond one place. Its current coverage is the London Borough of Newham. Tap a road, pick a time and how long you'll stay, and get a plain answer: who owns it, who sends the ticket, what it costs, how to appeal, and how sure we are.
+ParkMap is a free, open-source parking guide for Newham, London. Pick a road and a planned stay to see its likely ownership, enforcement, permit-zone hours, ticket information and the evidence behind the answer. Detailed parking rules currently cover Newham only.
 
-<p align="center">
-  <img src="assets/screenshots/desktop.png" alt="Desktop view: a card for Atlantis Avenue showing the permit zone running" width="760">
-</p>
-<p align="center">
-  <img src="assets/screenshots/phone-card.png" alt="Phone: spot card" width="200">
-  <img src="assets/screenshots/phone-nearby.png" alt="Phone: nearby spots list" width="200">
-</p>
+### [⬇ Download ParkMap for Android (v0.2.0 APK)](https://github.com/Jeremy8776/parkmap/releases/download/v0.2.0/parkmap-v0.2.0-debug.apk)
 
-**Use it:** download the Android APK from [Releases](../../releases). The web app is prepared for GitHub Pages at **https://jeremy8776.github.io/parkmap/** but is not published until the `prod` branch is deployed.
+*Debug-signed test build, not a Play Store release. [How to install](#get-it) · [Other releases](../../releases)*
 
-> **Read this first.** The sign on the street always wins. This is a guide built from open data, not legal or parking advice, and it can be wrong. "Permit zone is off" does **not** mean you can park: yellow lines, loading bans and bay signs can still apply. See [Accuracy](#accuracy-and-limits).
+> **Check the signs before parking.** ParkMap is a guide based on open data, not a guarantee that you can park. A permit zone being off does not override yellow lines, loading restrictions or bay signs. See [Accuracy and limits](#accuracy-and-limits).
 
 ## What it does
 
-- **Who owns and enforces each road.** TfL Red Routes, Newham council roads, and private or unadopted roads, colour-coded. Each road shows the evidence behind its classification and a confidence level.
-- **Time and stay length.** Choose a day, time and 1h / 2h / 4h / all day (or Now, This evening, Overnight). The answer covers the *whole stay*, not one moment. It also tells you when the zone next starts or ends.
-- **Permit zones.** All 41 Newham zones, with hours parsed from Newham's own text, plus pay-by-phone bays, limits and kerb markings where mapped.
-- **Pins that follow your time.** A blue ring means the permit zone is off for your stay, amber means it's running or you'd overstay a car park's limit. There is deliberately no green "free" ring.
-- **Fines and appeals.** Penalty amounts, discount windows and the appeal route for TfL, Newham and private operators.
-- **Check where I am.** One tap for your GPS position; if you are off a mapped road, the card says how far away the nearest road is. That road's rules may not apply exactly where you are. A nearby list shows bays and car parks, nearest first.
-- **Works offline.** The roads and rules are in the app. Only the map background needs signal.
-- **Built for phones:** thumb-reachable sheet, 44px targets, safe areas, light and dark.
+- **Roads and enforcement.** See whether a road appears to be TfL-managed, Newham-adopted or private/unadopted. The card shows the sources and how confident the classification is.
+- **Your whole stay.** Choose a day, time and duration (1h, 2h, 4h or all day), or use Now, This evening or Overnight. ParkMap checks whether the permit zone overlaps your stay and when it next starts or ends.
+- **Zones, bays and lines.** See Newham's 41 permit zones, pay-by-phone bays, limited-stay bays and mapped kerb markings. Some bay types are inferred, so check the street signs.
+- **Map cues.** A blue ring means the permit zone is off for your chosen stay; amber means it is running or a car park's limit may be exceeded. Neither means a spot is safe or free to use.
+- **Nearby places and GPS.** Find bays and car parks near your position. If GPS places you off a mapped road, ParkMap shows the nearest road and its distance, but its rules may not apply where you stand.
+- **Tickets and offline use.** Find penalty amounts, discount windows and appeal routes for TfL, Newham and private operators. Roads and rules are bundled in the app; the map background needs a connection. The phone layout supports light and dark modes.
 
 ## Get it
 
-| | |
-|---|---|
-| **Web / PWA** | Planned for https://jeremy8776.github.io/parkmap/ once `prod` is deployed. On a phone, use "Add to Home Screen". It then works offline. |
-| **Android APK** | Download `parkmap-*-debug.apk` from [Releases](../../releases), open it, and allow "install unknown apps" for your browser when asked. It is a debug-signed build for testing, not a Play Store release. The new ParkMap package installs separately from the earlier Newham Parking test APK; uninstall the old app when you no longer need it. |
-| **iPhone** | No app. Use the web app and Add to Home Screen. |
+**Android:** Use the [APK download above](https://github.com/Jeremy8776/parkmap/releases/download/v0.2.0/parkmap-v0.2.0-debug.apk), then open the downloaded file. If Android prompts you, allow your browser to install unknown apps. This is a test build; it installs separately from the earlier Newham Parking APK.
+
+**Web and iPhone:** The web app is prepared for GitHub Pages at `https://jeremy8776.github.io/parkmap/`, but is **not published yet**. Once deployed from `prod`, it can be added to a phone's home screen. There is no separate iPhone app.
 
 ## How it works
 
