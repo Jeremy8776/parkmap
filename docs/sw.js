@@ -1,7 +1,7 @@
 /* Offline support. Version and tile list are stamped in by build.py.
    Strategy: precache the app shell and every data tile, so the whole borough works with no signal after the first visit.
    The map background (Esri tiles) is cross-origin and is NOT cached: opaque responses count 7 MB each against the storage quota. */
-const V = "ngp-0b8dfd8331";
+const V = "ngp-9721428cad";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 const TILES = ["tiles/t_-1_1.js", "tiles/t_0_0.js", "tiles/t_0_1.js", "tiles/t_0_2.js", "tiles/t_0_3.js", "tiles/t_1_0.js", "tiles/t_1_1.js", "tiles/t_1_2.js", "tiles/t_1_3.js", "tiles/t_2_0.js", "tiles/t_2_1.js", "tiles/t_2_2.js", "tiles/t_2_3.js", "tiles/t_3_0.js", "tiles/t_3_1.js", "tiles/t_3_2.js", "tiles/t_3_3.js", "tiles/t_4_0.js", "tiles/t_4_1.js", "tiles/t_4_2.js", "tiles/t_4_3.js"];
 

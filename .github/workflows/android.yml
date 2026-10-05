@@ -1,8 +1,7 @@
 name: Build Android APK
 
-# Run it by hand from the Actions tab, or push a tag like v0.1.0 to build and attach the APK to a release.
+# Versioned tags produce signed, updateable APKs. Publishing is separate from prod deployment.
 on:
-  workflow_dispatch:
   push:
     tags: ["v*"]
 
@@ -14,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Validate release version
+        run: echo "VERSION_CODE=$(python scripts/release_version.py "$GITHUB_REF_NAME")" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -23,20 +24,33 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: npm ci
+      - run: npm test
       - name: Sync the built site into the Android project
         run: npx cap sync android
-      - name: Build debug APK
+      - name: Restore signing key
+        env:
+          PARKMAP_KEYSTORE_B64: ${{ secrets.PARKMAP_KEYSTORE_B64 }}
+        run: |
+          test -n "$PARKMAP_KEYSTORE_B64" || { echo 'Missing signing key'; exit 1; }
+          printf '%s' "$PARKMAP_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/parkmap-release.p12"
+          echo "PARKMAP_KEYSTORE_FILE=$RUNNER_TEMP/parkmap-release.p12" >> "$GITHUB_ENV"
+      - name: Build signed release APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        env:
+          PARKMAP_SIGNING_PASSWORD: ${{ secrets.PARKMAP_SIGNING_PASSWORD }}
+        run: ./gradlew :app:testDebugUnitTest assembleRelease --no-daemon -PparkmapVersionCode="$VERSION_CODE" -PparkmapVersionName="${GITHUB_REF_NAME#v}"
+      - name: Verify release certificate
+        run: |
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs android/app/build/outputs/apk/release/app-release.apk |
+            grep -F 'Signer #1 certificate SHA-256 digest: 4fef00f85b48a0efb9fe4e26d09274ee9dbc3e502264d7efb24d69fe22564d07'
       - name: Name the APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk parkmap-${{ github.ref_name }}-debug.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk "parkmap-${GITHUB_REF_NAME}.apk"
       - uses: actions/upload-artifact@v4
         with:
-          name: parkmap-debug-apk
-          path: parkmap-*-debug.apk
-      - name: Attach to the release (tags only)
-        if: startsWith(github.ref, 'refs/tags/v')
+          name: parkmap-signed-apk
+          path: parkmap-*.apk
+      - name: Attach to the release
         uses: softprops/action-gh-release@v2
         with:
-          files: parkmap-*-debug.apk
+          files: parkmap-*.apk
           prerelease: true

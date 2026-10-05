@@ -23,6 +23,8 @@ ParkMap is a free, open-source parking guide for Newham, London. Pick a road and
 
 **Android:** Use the [APK download above](https://github.com/Jeremy8776/parkmap/releases/download/v0.2.0/parkmap-v0.2.0-debug.apk), then open the downloaded file. If Android prompts you, allow your browser to install unknown apps. This is a test build; it installs separately from the earlier Newham Parking APK.
 
+**Updates:** Starting with the next signed release, the Android app checks GitHub Releases when opened and offers to download a newer APK. ParkMap checks the APK's SHA-256 digest, then Android asks you to confirm installation. It cannot install silently. The v0.2.0 debug APK was signed with a different key, so it must be uninstalled once before installing the first signed release; subsequent signed releases can update in place. Do not uninstall until that release is available.
+
 **Web and iPhone:** The web app is prepared for GitHub Pages at `https://jeremy8776.github.io/parkmap/`, but is **not published yet**. Once deployed from `prod`, it can be added to a phone's home screen. There is no separate iPhone app.
 
 ## How it works

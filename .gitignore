@@ -23,3 +23,5 @@ android/capacitor-cordova-android-plugins/
 *.aab
 *.keystore
 *.jks
+*.p12
+*.dpapi

@@ -339,3 +339,15 @@ details.more .c2{display:block;padding-top:6px}
 @media(prefers-color-scheme:dark){.near .st-warn{color:#ffb340}.near .st-info{color:#64b5ff}}
 @media(max-width:760px){.fact b{font-size:14px}.fact span{font-size:11px}}
 @media(min-width:761px){#planchip{top:18px;left:424px;height:34px}}
+
+/* Android update offer stays above the map and sheet without replacing either. */
+#updateBar{position:absolute;z-index:2100;bottom:calc(14px + env(safe-area-inset-bottom));left:12px;width:min(440px,calc(100% - 24px));border-radius:16px;padding:12px;display:flex;align-items:center;gap:9px}
+#updateBar span{flex:1;min-width:0;line-height:1.25}
+#updateBar b{display:block;font-size:14px}
+#updateBar small{display:block;color:var(--mute);font-size:12px;margin-top:3px}
+#updateBar button{min-height:44px;padding:0 11px;border-radius:12px;font-size:13px;font-weight:600}
+#updateBar .updateNow{background:var(--accent);color:#fff}
+#updateBar .updateNow:disabled{opacity:.65;cursor:wait}
+#updateBar .updateLater{background:var(--fill)}
+#updateBar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:760px){#updateBar{left:8px;bottom:calc(8px + env(safe-area-inset-bottom));width:calc(100% - 16px)}}

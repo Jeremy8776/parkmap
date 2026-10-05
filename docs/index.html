@@ -1017,6 +1017,18 @@ details.more .c2{display:block;padding-top:6px}
 @media(prefers-color-scheme:dark){.near .st-warn{color:#ffb340}.near .st-info{color:#64b5ff}}
 @media(max-width:760px){.fact b{font-size:14px}.fact span{font-size:11px}}
 @media(min-width:761px){#planchip{top:18px;left:424px;height:34px}}
+
+/* Android update offer stays above the map and sheet without replacing either. */
+#updateBar{position:absolute;z-index:2100;bottom:calc(14px + env(safe-area-inset-bottom));left:12px;width:min(440px,calc(100% - 24px));border-radius:16px;padding:12px;display:flex;align-items:center;gap:9px}
+#updateBar span{flex:1;min-width:0;line-height:1.25}
+#updateBar b{display:block;font-size:14px}
+#updateBar small{display:block;color:var(--mute);font-size:12px;margin-top:3px}
+#updateBar button{min-height:44px;padding:0 11px;border-radius:12px;font-size:13px;font-weight:600}
+#updateBar .updateNow{background:var(--accent);color:#fff}
+#updateBar .updateNow:disabled{opacity:.65;cursor:wait}
+#updateBar .updateLater{background:var(--fill)}
+#updateBar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:760px){#updateBar{left:8px;bottom:calc(8px + env(safe-area-inset-bottom));width:calc(100% - 16px)}}
 </style>
 </head>
 <body>
@@ -2105,6 +2117,71 @@ function showNearby() {
   $('mapwrap').appendChild(c);
   c.onclick = () => { $('timeBox').classList.add('tm-open'); $('moreTime').textContent = 'Done'; $('moreTime').setAttribute('aria-expanded', 'true'); if (sheetDetent() === 'peek') setDetent(MODE === 'spot' ? 'fit' : 'half'); else setDetent(sheetDetent()); };
   applyTime();
+})();
+
+/* Android APK releases only. Web/PWA visitors never see the updater. */
+function releaseCode(tag) {
+  const match = /^v(\d+)\.(\d+)\.(\d+)$/.exec(tag || '');
+  if (!match) return null;
+  const [major, minor, patch] = match.slice(1).map(Number);
+  if (!Number.isSafeInteger(major) || major > 2147 || minor > 999 || patch > 999) return null;
+  const code = major * 1000000 + minor * 1000 + patch;
+  return code > 0 && code <= 2147483647 ? code : null;
+}
+function selectUpdate(releases, installedCode) {
+  if (!Array.isArray(releases) || !Number.isSafeInteger(installedCode)) return null;
+  return releases.filter(r => {
+    const code = releaseCode(r.tag_name), name = `parkmap-${r.tag_name}.apk`;
+    const asset = r.assets?.find(a => a.name === name);
+    const expected = `https://github.com/Jeremy8776/parkmap/releases/download/${r.tag_name}/${name}`;
+    return !r.draft && code > installedCode && asset?.browser_download_url === expected &&
+      /^sha256:[a-f0-9]{64}$/i.test(asset.digest || '') && asset.size >= 1000000 && asset.size <= 80000000;
+  }).sort((a, b) => releaseCode(b.tag_name) - releaseCode(a.tag_name))[0] || null;
+}
+
+(function () {
+  const cap = window.Capacitor;
+  if (!cap || cap.getPlatform?.() !== 'android' || !cap.nativePromise) return;
+  const native = (method, options = {}) => cap.nativePromise('ParkMapUpdate', method, options);
+  async function check() {
+    try {
+      const [{ versionCode }, response] = await Promise.all([
+        native('getVersion'), fetch('https://api.github.com/repos/Jeremy8776/parkmap/releases?per_page=30', {
+          headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store'
+        })
+      ]);
+      if (!response.ok) return;
+      const update = selectUpdate(await response.json(), versionCode);
+      if (!update) return;
+      const asset = update.assets.find(a => a.name === `parkmap-${update.tag_name}.apk`);
+      const bar = document.createElement('div');
+      bar.id = 'updateBar'; bar.className = 'glass';
+      bar.setAttribute('role', 'status');
+      bar.innerHTML = `<span><b>ParkMap ${update.tag_name} is available</b><small>Download and install the update</small></span><button type="button" class="updateNow">Update</button><button type="button" class="updateLater" aria-label="Dismiss update">Later</button>`;
+      document.getElementById('mapwrap').appendChild(bar);
+      const button = bar.querySelector('.updateNow');
+      bar.querySelector('.updateLater').onclick = () => bar.remove();
+      button.onclick = async () => {
+        button.disabled = true; button.textContent = 'Downloading…';
+        try {
+          const result = await native('installUpdate', {
+            url: asset.browser_download_url, digest: asset.digest, versionCode: releaseCode(update.tag_name)
+          });
+          if (result.permissionRequired) {
+            button.textContent = 'Try again';
+            bar.querySelector('small').textContent = 'Allow installs for ParkMap in Settings, then tap Try again.';
+          } else {
+            button.textContent = 'Installing…';
+            bar.querySelector('small').textContent = 'Confirm the installation in Android.';
+          }
+        } catch (error) {
+          button.textContent = 'Retry';
+          bar.querySelector('small').textContent = 'Update failed. Check your connection and try again.';
+        } finally { button.disabled = false; }
+      };
+    } catch (error) { /* Offline or the release API is unavailable; the map still works. */ }
+  }
+  setTimeout(check, 1200);
 })();
 </script>
 <script>if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol) && !window.Capacitor) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>

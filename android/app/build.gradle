@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+// CI passes version and signing credentials at build time; no keystore enters git.
+def signingFile = System.getenv('PARKMAP_KEYSTORE_FILE')
+def signingPassword = System.getenv('PARKMAP_SIGNING_PASSWORD')
+def androidVersionCode = Integer.parseInt((project.findProperty('parkmapVersionCode') ?: '2000').toString())
+def androidVersionName = (project.findProperty('parkmapVersionName') ?: '0.2.0').toString()
+def buildingRelease = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
+if (buildingRelease && (!signingFile || !signingPassword)) {
+    throw new GradleException('A release requires PARKMAP_KEYSTORE_FILE and PARKMAP_SIGNING_PASSWORD')
+}
+
 android {
     namespace "io.github.jeremy8776.parkmap"
     compileSdk rootProject.ext.compileSdkVersion
@@ -7,8 +17,8 @@ android {
         applicationId "io.github.jeremy8776.parkmap"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.2.0"
+        versionCode androidVersionCode
+        versionName androidVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +26,19 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (signingFile && signingPassword) {
+                storeFile file(signingFile)
+                storePassword signingPassword
+                keyAlias 'parkmap'
+                keyPassword signingPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
