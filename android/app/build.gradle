@@ -3,8 +3,8 @@ apply plugin: 'com.android.application'
 // CI passes version and signing credentials at build time; no keystore enters git.
 def signingFile = System.getenv('PARKMAP_KEYSTORE_FILE')
 def signingPassword = System.getenv('PARKMAP_SIGNING_PASSWORD')
-def androidVersionCode = Integer.parseInt((project.findProperty('parkmapVersionCode') ?: '2000').toString())
-def androidVersionName = (project.findProperty('parkmapVersionName') ?: '0.2.0').toString()
+def androidVersionCode = Integer.parseInt((project.findProperty('parkmapVersionCode') ?: '3000').toString())
+def androidVersionName = (project.findProperty('parkmapVersionName') ?: '0.3.0').toString()
 def buildingRelease = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
 if (buildingRelease && (!signingFile || !signingPassword)) {
     throw new GradleException('A release requires PARKMAP_KEYSTORE_FILE and PARKMAP_SIGNING_PASSWORD')

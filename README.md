@@ -4,9 +4,9 @@
 
 ParkMap is a free, open-source parking guide for Newham, London. Pick a road and a planned stay to see its likely ownership, enforcement, permit-zone hours, ticket information and the evidence behind the answer. Detailed parking rules currently cover Newham only.
 
-### [⬇ Download ParkMap for Android (v0.2.0 APK)](https://github.com/Jeremy8776/parkmap/releases/download/v0.2.0/parkmap-v0.2.0-debug.apk)
+### [⬇ Download ParkMap for Android (v0.3.0 APK)](https://github.com/Jeremy8776/parkmap/releases/download/v0.3.0/parkmap-v0.3.0.apk)
 
-*Debug-signed test build, not a Play Store release. [How to install](#get-it) · [Other releases](../../releases)*
+*Signed pre-release APK, not a Play Store release. [How to install](#get-it) · [Other releases](../../releases)*
 
 > **Check the signs before parking.** ParkMap is a guide based on open data, not a guarantee that you can park. A permit zone being off does not override yellow lines, loading restrictions or bay signs. See [Accuracy and limits](#accuracy-and-limits).
 
@@ -21,9 +21,9 @@ ParkMap is a free, open-source parking guide for Newham, London. Pick a road and
 
 ## Get it
 
-**Android:** Use the [APK download above](https://github.com/Jeremy8776/parkmap/releases/download/v0.2.0/parkmap-v0.2.0-debug.apk), then open the downloaded file. If Android prompts you, allow your browser to install unknown apps. This is a test build; it installs separately from the earlier Newham Parking APK.
+**Android:** Use the [signed v0.3.0 APK download above](https://github.com/Jeremy8776/parkmap/releases/download/v0.3.0/parkmap-v0.3.0.apk), then open the downloaded file. If Android prompts you, allow your browser to install unknown apps. This pre-release installs separately from the earlier Newham Parking APK.
 
-**Updates:** Starting with the next signed release, the Android app checks GitHub Releases when opened and offers to download a newer APK. ParkMap checks the APK's SHA-256 digest, then Android asks you to confirm installation. It cannot install silently. The v0.2.0 debug APK was signed with a different key, so it must be uninstalled once before installing the first signed release; subsequent signed releases can update in place. Do not uninstall until that release is available.
+**Updates:** From v0.3.0 onward, the Android app checks GitHub Releases when opened and offers to download a newer APK. ParkMap checks the APK's SHA-256 digest, then Android asks you to confirm installation. It cannot install silently. The v0.2.0 debug APK was signed with a different key, so uninstall that version before installing v0.3.0; subsequent signed releases can update in place.
 
 **Web and iPhone:** The web app is prepared for GitHub Pages at `https://jeremy8776.github.io/parkmap/`, but is **not published yet**. Once deployed from `prod`, it can be added to a phone's home screen. There is no separate iPhone app.
 
@@ -55,7 +55,7 @@ python build.py                                    # writes docs/
 python -m http.server -d docs 8000                 # then open http://localhost:8000
 ```
 
-Tests: `python -m unittest discover -s tests && node tests/rules.test.js`
+Tests: `npm test` (Python and JavaScript tests).
 
 Android: `npm install && npx cap sync android && cd android && ./gradlew assembleDebug`. The APK lands in `android/app/build/outputs/apk/debug/`.
 
@@ -69,7 +69,7 @@ Be honest about what this is:
 - **Land Registry parcels are only fetched for the Gallions Reach area**, and they name no owner. They carry low weight.
 - **Car park limits** (for example Gallions Reach Shopping Park, Beckton Gateway) come from the operators' public pages and can change. Parkopedia lists some of these as closed at times where we say open, so treat them as unverified.
 - **Only Newham has rules.** Neighbouring boroughs show roads and TfL Red Routes, not their zones. TfL Red Routes for all of Greater London are an optional layer.
-- **Phone tested:** a Samsung S24+ ran the debug APK, including location, map, ticket help, time controls and local roads while offline. This is one device, not a guarantee for other phones.
+- **Phone tested:** a Samsung S24+ ran the v0.2.0 debug APK, including location, map, ticket help, time controls and local roads while offline. The signed v0.3.0 update/install flow has not yet been tested on a phone.
 - **Data is a snapshot** (pulled 04/10/2026). It does not update itself.
 
 ## Contributing
