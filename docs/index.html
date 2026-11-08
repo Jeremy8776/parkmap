@@ -1029,6 +1029,11 @@ details.more .c2{display:block;padding-top:6px}
 #updateBar .updateLater{background:var(--fill)}
 #updateBar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:760px){#updateBar{left:8px;bottom:calc(8px + env(safe-area-inset-bottom));width:calc(100% - 16px)}}
+
+/* Overview counts retain every parking location instead of hiding collisions. */
+.parking-cluster{display:flex;align-items:center;justify-content:center;border-radius:50%;background:#174b70;color:#fff;border:3px solid #fff;box-shadow:0 2px 7px #0005;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.parking-cluster:hover{background:#103650}
+.parking-cluster:focus-visible{outline:3px solid #f29f05;outline-offset:3px}
 </style>
 </head>
 <body>
@@ -1048,7 +1053,7 @@ details.more .c2{display:block;padding-top:6px}
     <button id="btnGuide" class="glass round" aria-label="Guide"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".6" fill="currentColor"/></svg></button>
   </div>
   <div id="layersPop" class="glass" hidden></div>
-  <div id="zoomhint" class="glass">Zoom in to see roads and bays</div>
+  <div id="zoomhint" class="glass">Select a group to see parking locations; zoom in for road detail</div>
   <div id="loadhint" class="glass">Loading area...</div>
   <div id="fogcount" class="glass"></div>
 
@@ -1396,22 +1401,47 @@ const allMarkers = [];
 function addMarker(m) {
   const mk = L.marker([m.lat, m.lon], { icon: bayIcon(m), pane: 'bays', riseOnHover: true }).bindPopup(() => bayPopup(m), { maxWidth: Math.min(300, innerWidth - 70), autoPanPaddingTopLeft: [10, 70], autoPanPaddingBottomRight: [10, 170] });
   mk.on('add', () => {
-    applyIdle(mk, m); requestAnimationFrame(declutter);
+    applyIdle(mk, m);
     const bi = mk.getElement() && mk.getElement().firstChild, c = map.latLngToContainerPoint(mk.getLatLng()), s = map.getSize();
     if (bi) bi.style.animationDelay = Math.round(Math.min(520, Math.hypot(c.x - s.x / 2, c.y - s.y / 2) * .45)) + 'ms';
   });
   allMarkers.push([mk, m]);
   (m.t === 'cycle' ? tg(m._k).cycle : tg(m._k).markers).addLayer(mk);
 }
-const PRIO = { disabled: 7, ev: 6, permit: 5, customer: 4, private: 3, carpark: 2, taxi: 2, cycle: 1 };
-function declutter() {
-  const z = map.getZoom(), gap = z >= 18 ? 0 : z >= 17 ? 17 : z >= 16 ? 21 : 24, shown = [], b = map.getBounds().pad(.1);
-  allMarkers.filter(([mk]) => mk._map && b.contains(mk.getLatLng())).sort((a, c) => PRIO[c[1].t] - PRIO[a[1].t] || c[1].n - a[1].n).forEach(([mk, m]) => {
-    const el = mk.getElement(); if (!el) return;
-    const p = map.latLngToLayerPoint(mk.getLatLng()), hide = gap > 0 && shown.some(q => Math.hypot(q.x - p.x, q.y - p.y) < gap);
-    if (!hide) shown.push(p);
-    el.classList.toggle('dh', hide);
+// Group locations in world-pixel cells so groups stay stable while panning.
+// Every enabled location contributes once; the count is locations, not bay capacity.
+const markerLayer = L.layerGroup().addTo(map), clusterLayer = L.layerGroup().addTo(map);
+function groupMarkers(entries, zoom, project) {
+  const cells = new Map(), size = zoom < 14 ? 80 : zoom < 16 ? 64 : 48;
+  entries.forEach(entry => {
+    const p = project(entry[0].getLatLng());
+    const key = zoom >= 18 ? entry : Math.floor(p.x / size) + ':' + Math.floor(p.y / size);
+    if (!cells.has(key)) cells.set(key, []);
+    cells.get(key).push(entry);
   });
+  return [...cells.values()];
+}
+function declutter() {
+  const z = map.getZoom(), bounds = map.getBounds().pad(.2);
+  const entries = allMarkers.filter(([mk, m]) => (m.t === 'cycle' ? ON.cycle : ON.bays) && bounds.contains(mk.getLatLng()));
+  const singles = new Set();
+  clusterLayer.clearLayers();
+  groupMarkers(entries, z, ll => map.project(ll, z)).forEach(group => {
+    if (group.length === 1) { singles.add(group[0][0]); return; }
+    const extent = L.latLngBounds(group.map(([mk]) => mk.getLatLng()));
+    const label = group.length + ' parking locations. Zoom in to expand';
+    const cluster = L.marker(extent.getCenter(), {
+      pane: 'bays', title: label, alt: label,
+      icon: L.divIcon({ className: 'parking-cluster', iconSize: [44, 44], iconAnchor: [22, 22],
+        html: '<span>' + group.length + '</span>' })
+    });
+    cluster.on('click', () => {
+      map.fitBounds(extent, { padding: [60, 60], maxZoom: Math.min(19, Math.max(z + 1, 18)) });
+    });
+    clusterLayer.addLayer(cluster);
+  });
+  markerLayer.eachLayer(mk => { if (!singles.has(mk)) markerLayer.removeLayer(mk); });
+  singles.forEach(mk => { if (!markerLayer.hasLayer(mk)) markerLayer.addLayer(mk); });
 }
 
 // ---- tile loader ----
@@ -1507,8 +1537,8 @@ const tileBox = k => { const [x, y] = k.split('_').map(Number), s0 = TIDX.S + y 
 const TBOX = {};
 /* Which kinds are drawn at this zoom. Casings wait for zoom 15: they double the layer count and are invisible at overview scale. */
 const kindOn = z => ({ tfl: ON.roads && z >= MINZ, newham: ON.roads && z >= MINZ, private: ON.roads && z >= MINZ, other: ON.roads && z >= MINZ, m_newham: ON.roads && z >= 15, m_private: ON.roads && z >= 15, m_other: ON.roads && z >= 15, strip: ON.roads && z >= MINZ,
-  cas: ON.roads && z >= (COARSE ? 16 : 15), fine: ON.roads && z >= 17, land: ON.land && z >= MINZ, markers: ON.bays && z >= 15, shapes: ON.bays && z >= 17,
-  kerb: ON.kerb && z >= 16, kstop: ON.kerb && z >= 18, cycle: ON.cycle && z >= 16.5 });
+  cas: ON.roads && z >= (COARSE ? 16 : 15), fine: ON.roads && z >= 17, land: ON.land && z >= MINZ, markers: false, shapes: ON.bays && z >= 17,
+  kerb: ON.kerb && z >= 16, kstop: ON.kerb && z >= 18, cycle: false });
 function cull() {
   const z = map.getZoom(), view = map.getBounds().pad(.35), on = kindOn(z);
   Object.keys(TG).forEach(k => {
@@ -1529,9 +1559,9 @@ function sync() {
   document.getElementById('map').style.setProperty('--bs', z <= 15 ? .78 : z <= 16 ? .88 : z <= 17 ? 1 : 1.15);
   cull();
 }
-map.on('moveend', () => { if (map.getZoom() >= MINZ) loadTiles(map.getBounds().pad(.25)); cull(); });
+map.on('moveend', () => { loadTiles(map.getBounds().pad(.25)); cull(); });
 map.on('zoomend', sync);
-if (map.getZoom() >= MINZ) loadTiles(map.getBounds().pad(.25)); sync();
+loadTiles(map.getBounds().pad(.25)); sync();
 window.__mapReady = true; restyleRoads(true);
 
 /* Working out what a tapped spot is, and describing it (Clarity: one verdict, details on demand). */

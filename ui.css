@@ -351,3 +351,8 @@ details.more .c2{display:block;padding-top:6px}
 #updateBar .updateLater{background:var(--fill)}
 #updateBar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:760px){#updateBar{left:8px;bottom:calc(8px + env(safe-area-inset-bottom));width:calc(100% - 16px)}}
+
+/* Overview counts retain every parking location instead of hiding collisions. */
+.parking-cluster{display:flex;align-items:center;justify-content:center;border-radius:50%;background:#174b70;color:#fff;border:3px solid #fff;box-shadow:0 2px 7px #0005;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.parking-cluster:hover{background:#103650}
+.parking-cluster:focus-visible{outline:3px solid #f29f05;outline-offset:3px}
