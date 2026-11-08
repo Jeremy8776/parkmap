@@ -1412,10 +1412,10 @@ function addMarker(m) {
 // Every enabled location contributes once; the count is locations, not bay capacity.
 const markerLayer = L.layerGroup().addTo(map), clusterLayer = L.layerGroup().addTo(map);
 function groupMarkers(entries, zoom, project) {
-  const cells = new Map(), size = zoom < 14 ? 80 : zoom < 16 ? 64 : 48;
+  const cells = new Map(), size = zoom < 14 ? 56 : zoom < 16 ? 40 : 32;
   entries.forEach(entry => {
     const p = project(entry[0].getLatLng());
-    const key = zoom >= 18 ? entry : Math.floor(p.x / size) + ':' + Math.floor(p.y / size);
+    const key = zoom >= 17 ? entry : Math.floor(p.x / size) + ':' + Math.floor(p.y / size);
     if (!cells.has(key)) cells.set(key, []);
     cells.get(key).push(entry);
   });
