@@ -132,7 +132,7 @@ function groupMarkers(entries, zoom, project) {
   const cells = new Map(), size = zoom < 14 ? 56 : zoom < 16 ? 40 : 32;
   entries.forEach(entry => {
     const p = project(entry[0].getLatLng());
-    const key = zoom >= 17 ? entry : Math.floor(p.x / size) + ':' + Math.floor(p.y / size);
+    const key = zoom >= 16 ? entry : Math.floor(p.x / size) + ':' + Math.floor(p.y / size);
     if (!cells.has(key)) cells.set(key, []);
     cells.get(key).push(entry);
   });

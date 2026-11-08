@@ -15,8 +15,8 @@ for (const zoom of [8, 13, 14, 15, 16, 17, 18, 19]) {
 assert.strictEqual(ctx.group(entries, 13, p => p).length, 2);
 assert.strictEqual(ctx.group(entries, 17, p => p).length, 3);
 const samePlace = [[{getLatLng: () => ({x: 1, y: 1})}], [{getLatLng: () => ({x: 1, y: 1})}]];
-assert.strictEqual(ctx.group(samePlace, 16, p => p).length, 1);
-assert.strictEqual(ctx.group(samePlace, 17, p => p).length, 2);
+assert.strictEqual(ctx.group(samePlace, 15, p => p).length, 1);
+assert.strictEqual(ctx.group(samePlace, 16, p => p).length, 2);
 assert.strictEqual(ctx.group([], 10, p => p).length, 0);
 assert(code.includes('markers: false') && code.includes('cycle: false'), 'tile groups must not duplicate clustered markers');
 assert(!code.includes('if (map.getZoom() >= MINZ) loadTiles'), 'overview must load unseen tiles');
